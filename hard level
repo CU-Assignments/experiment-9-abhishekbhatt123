@@ -1,0 +1,70 @@
+1-import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
+public class Account {
+    @Id
+    private int accountId;
+    private double balance;
+
+    // Constructors, Getters, Setters
+    public Account() {}
+
+    public Account(int accountId, double balance) {
+        this.accountId = accountId;
+        this.balance = balance;
+    }
+
+    public int getAccountId() { return accountId; }
+    public void setAccountId(int accountId) { this.accountId = accountId; }
+
+    public double getBalance() { return balance; }
+    public void setBalance(double balance) { this.balance = balance; }
+}
+
+2-import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
+public class Transaction {
+    @Id
+    private int transactionId;
+    private int fromAccountId;
+    private int toAccountId;
+    private double amount;
+
+    // Constructors, Getters, Setters
+    public Transaction() {}
+
+    public Transaction(int fromAccountId, int toAccountId, double amount) {
+        this.fromAccountId = fromAccountId;
+        this.toAccountId = toAccountId;
+        this.amount = amount;
+    }
+
+    // Getters and setters...
+}
+
+3-import org.springframework.transaction.annotation.Transactional;
+
+public class BankService {
+
+    @Transactional
+    public void transferMoney(Account fromAccount, Account toAccount, double amount) {
+        // Check balance
+        if (fromAccount.getBalance() < amount) {
+            throw new IllegalArgumentException("Insufficient funds");
+        }
+
+        // Debit from sender account
+        fromAccount.setBalance(fromAccount.getBalance() - amount);
+
+        // Credit to receiver account
+        toAccount.setBalance(toAccount.getBalance() + amount);
+
+        // Simulate a failure to demonstrate rollback
+        if (amount > 1000) {
+            throw new RuntimeException("Simulating failure for transaction");
+        }
+    }
+}
