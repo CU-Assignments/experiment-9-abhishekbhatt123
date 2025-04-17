@@ -1,0 +1,140 @@
+1-<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+
+    <session-factory>
+        <!-- JDBC Database connection settings -->
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+        <property name="hibernate.hbm2ddl.auto">update</property>
+        <property name="hibernate.show_sql">true</property>
+        <property name="hibernate.format_sql">true</property>
+
+        <!-- JDBC connection pool settings -->
+        <property name="hibernate.c3p0.min_size">5</property>
+        <property name="hibernate.c3p0.max_size">20</property>
+        <property name="hibernate.c3p0.timeout">300</property>
+        <property name="hibernate.c3p0.max_statements">50</property>
+
+        <!-- Specify JDBC driver class -->
+        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/your_database</property>
+        <property name="hibernate.connection.username">your_username</property>
+        <property name="hibernate.connection.password">your_password</property>
+
+        <!-- Echo all executed SQL to stdout -->
+        <property name="hibernate.current_session_context_class">thread</property>
+
+        <!-- Drop and re-create the database schema on startup -->
+        <property name="hibernate.hbm2ddl.auto">update</property>
+    </session-factory>
+
+</hibernate-configuration>
+
+2- import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
+public class Student {
+
+    @Id
+    private int id;
+    private String name;
+    private int age;
+
+    // Constructors, Getters, Setters, and toString method
+    public Student() {}
+
+    public Student(int id, String name, int age) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+    }
+
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public int getAge() { return age; }
+    public void setAge(int age) { this.age = age; }
+
+    @Override
+    public String toString() {
+        return "Student [id=" + id + ", name=" + name + ", age=" + age + "]";
+    }
+}
+
+3- import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+
+public class StudentDAO {
+
+    private static SessionFactory factory;
+
+    // Initialize the factory
+    static {
+        factory = new Configuration().configure("hibernate.cfg.xml").addAnnotatedClass(Student.class).buildSessionFactory();
+    }
+
+    // Create a new student
+    public void createStudent(Student student) {
+        Session session = factory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+        session.save(student);
+        transaction.commit();
+    }
+
+    // Read student by ID
+    public Student getStudent(int studentId) {
+        Session session = factory.getCurrentSession();
+        return session.get(Student.class, studentId);
+    }
+
+    // Update student
+    public void updateStudent(Student student) {
+        Session session = factory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+        session.update(student);
+        transaction.commit();
+    }
+
+    // Delete student
+    public void deleteStudent(int studentId) {
+        Session session = factory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+        Student student = session.get(Student.class, studentId);
+        session.delete(student);
+        transaction.commit();
+    }
+
+    // Close session factory
+    public void close() {
+        factory.close();
+    }
+}
+
+4-public class MainApp {
+    public static void main(String[] args) {
+        StudentDAO studentDAO = new StudentDAO();
+
+        // Create a new student
+        Student student1 = new Student(1, "John Doe", 22);
+        studentDAO.createStudent(student1);
+
+        // Get student by ID
+        Student student = studentDAO.getStudent(1);
+        System.out.println("Student fetched: " + student);
+
+        // Update student
+        student.setAge(23);
+        studentDAO.updateStudent(student);
+
+        // Delete student
+        studentDAO.deleteStudent(1);
+
+        studentDAO.close();
+    }
+}
